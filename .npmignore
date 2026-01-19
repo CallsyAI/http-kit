@@ -1,0 +1,14 @@
+.idea/
+.git/
+src/
+tsconfig.json
+*.ts
+!*.d.ts
+node_modules/
+.env
+*.log
+test/
+tests/
+coverage/
+.vscode/
+.DS_Store

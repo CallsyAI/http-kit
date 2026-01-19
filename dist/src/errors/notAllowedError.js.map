@@ -1,0 +1,1 @@
+{"version":3,"file":"notAllowedError.js","sourceRoot":"","sources":["../../../src/errors/notAllowedError.ts"],"names":[],"mappings":";;;;;AAAA,gEAA2D;AAE3D,MAAqB,eAAgB,SAAQ,qBAAW;IACtD,YAAY,KAAwB;QAClC,KAAK,CAAC;YACJ,IAAI,EAAE,iBAAiB;YACvB,OAAO,EAAE,wCAAwC;YACjD,KAAK,EAAE,2CAA2C;YAClD,WAAW,EAAE,6CAA6C;YAC1D,QAAQ,EAAE,GAAG;YACb,GAAG,KAAK;SACT,CAAC,CAAA;IACJ,CAAC;CACF;AAXD,kCAWC"}
