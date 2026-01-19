@@ -1,6 +1,6 @@
 {
   "name": "@callsy/http-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "HTTP client utilities and custom error handling.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
