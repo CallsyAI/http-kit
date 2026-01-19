@@ -1,6 +1,14 @@
 # @callsy/http-kit
 
-HTTP client utilities and custom error handling for Callsy applications.
+A powerful and fluent HTTP client toolkit for Node.js, built on top of Axios. It simplifies creating robust and resilient HTTP clients with built-in caching, automatic retries, and intelligent error handling.
+
+## Features
+
+- **Fluent Builder**: A clean, chainable API for constructing `axios` instances.
+- **Smart Error Handling**: Automatically map HTTP error responses to custom, serializable error classes.
+- **Automatic Retries**: Built-in, configurable retry mechanism for transient network and server errors.
+- **Request Caching**: Out-of-the-box caching for `GET` requests to improve performance.
+- **TypeScript Ready**: Fully typed for a great developer experience.
 
 ## Installation
 
@@ -8,137 +16,162 @@ HTTP client utilities and custom error handling for Callsy applications.
 npm install @callsy/http-kit
 ```
 
-## Features
+## Quick Start
 
-- **Custom Error Classes**: HTTP-compatible error classes with serialization support
-- **HTTP Builder**: Fluent API for creating Axios instances with caching, retry logic, and error mapping
-- **Error Mapping**: Automatically map external API errors to custom error classes
-
-## Usage
-
-### Custom Errors
-
-All error classes extend `CustomError` which provides a fluent API for error handling:
+Create a configured client, make a request, and automatically catch a typed, custom error.
 
 ```typescript
-import { InvalidInputError, CustomError } from '@callsy/http-kit'
+import {
+  Builder,
+  ErrorMap,
+  ExternalApiError,
+  InvalidInputError,
+  CustomError
+} from '@callsy/http-kit';
 
-// Throw a specific error
-throw new InvalidInputError({ message: 'Invalid email format' })
+// 1. Define how errors should be mapped
+const errorMap = new ErrorMap()
+  .withError(InvalidInputError, [400]) // Map 400 status to InvalidInputError
+  .withDefault(ExternalApiError); // Use ExternalApiError for all other errors
 
-// Check if an object is a CustomError
-if (CustomError.isError(responseData)) {
-  // Handle error
+// 2. Build a new HTTP client instance
+const httpClient = new Builder()
+  .withDefaults({ baseURL: 'https://api.example.com' })
+  .withRetry(3) // Retry failed requests up to 3 times
+  .withCache(60) // Cache GET requests for 60 seconds
+  .withErrorMapping(errorMap)
+  .build();
+
+// 3. Use the client and handle errors
+async function getUser(id: string) {
+  try {
+    const response = await httpClient.get(`/users/${id}`);
+    return response.data;
+  } catch (error) {
+    if (CustomError.isError(error)) {
+      // 'error' is now a typed CustomError instance (e.g., InvalidInputError)
+      console.error(error.getTitle()); // "Bad Request"
+      console.error(error.getMessage()); // "The server cannot process the request..."
+      // You can now handle the specific error type
+    } else {
+      // Handle non-custom errors (e.g., network issues)
+      console.error('An unknown error occurred', error);
+    }
+  }
 }
+```
 
-// Throw if error (useful for error boundaries)
-CustomError.throwIfError(loaderData)
+## Core Concepts
 
-// Serialize error for API responses
-const errorObj = error.toObject()
+### The Fluent Builder
+
+The `Builder` provides a clean, chainable API to construct your `axios` client.
+
+- `.withDefaults({ ... })`: Sets default `axios` request configuration (e.g., `baseURL`, `headers`, `timeout`).
+- `.withRetry(retries, delay)`: Enables automatic retries for failed requests. Retries on network errors, 5xx status codes, 408 (Request Timeout), and 429 (Too Many Requests).
+- `.withCache(ttlSeconds)`: Enables in-memory caching for `GET` requests with a specified Time-To-Live.
+- `.withErrorMapping(errorMap)`: Attaches an `ErrorMap` to translate HTTP errors into custom error classes.
+
+### Advanced Error Handling with ErrorMap
+
+The `ErrorMap` gives you fine-grained control over how errors are translated.
+
+```typescript
+import { ErrorMap, RateLimitError, UnauthorizedError, ExternalApiError, GenericError } from '@callsy/http-kit';
+
+const errorMap = new ErrorMap()
+  // Map by HTTP status code
+  .withError(UnauthorizedError, [401, 403])
+
+  // Map by a substring in the response body
+  .withError(RateLimitError, ['rate limit', 'too many requests'])
+
+  // Extract a specific error message from a nested path in the JSON response
+  .withCustomErrorPath('errors[0].detail')
+
+  // Set a default fallback error for any unhandled cases
+  .withDefault(ExternalApiError);
+```
+
+### Error Serialization
+
+A key feature of `@callsy/http-kit` is the ability to serialize custom errors to plain objects and deserialize them back into class instances. This is incredibly useful for passing errors between services or from your backend to your frontend.
+
+**Serializing an Error to an Object:**
+
+```typescript
+import { ResourceDoesNotExistError } from '@callsy/http-kit';
+
+const error = new ResourceDoesNotExistError({ message: 'User not found' });
+
+// The .toObject() method converts the error into a plain object.
+const errorObject = error.toObject();
+/*
+{
+  isCustomError: true,
+  name: 'ResourceDoesNotExistError',
+  message: 'User not found',
+  title: 'Resource does not exist',
+  description: 'The requested resource could not be found.',
+  httpCode: 404,
+  isCritical: false
+}
+*/
+```
+
+**Deserializing an Object back into an Error:**
+
+Use the static `fromObject` method to reconstruct the error.
+
+```typescript
+import { CustomError } from '@callsy/http-kit';
+
+// Assume 'errorObject' is from an API response
+const errorInstance = CustomError.fromObject(errorObject);
+
+if (errorInstance) {
+  // errorInstance is now a fully-functional ResourceDoesNotExistError instance
+  console.log(errorInstance instanceof ResourceDoesNotExistError); // true
+  throw errorInstance;
+}
+```
+
+You can also safely check and throw the error in one go:
+
+```typescript
+// Throws a fully reconstructed error if the object is a custom error
+CustomError.throwIfError(apiResponse);
 ```
 
 ### Available Error Classes
 
-- `CustomError` - Base error class
-- `InvalidInputError` (400) - Invalid input data
-- `UnauthorizedError` (401) - Authentication required
-- `NotAllowedError` (405) - Insufficient permissions
-- `ResourceDoesNotExistError` (404) - Resource not found
-- `ExternalApiError` (424) - External API failure
-- `RateLimitError` (429) - Rate limit exceeded
-- `GenericError` (500) - Generic server error
-- `RequiredValueError` (400) - Required value missing
-- `MisconfiguredError` - Application misconfiguration
-- `NotEnoughAvailableCallsError` - Insufficient available calls
-- `ShopMismatchError` - Shop context mismatch
-- `MaintenanceModeError` - Application in maintenance
-- `InitiateCallFailed` - Call initiation failure
+The library includes a set of pre-defined, semantic error classes for common HTTP scenarios:
 
-### HTTP Builder
+- `BadRequestError` (400)
+- `UnauthorizedError` (401)
+- `PaymentRequiredError` (402)
+- `ForbiddenError` (403)
+- `ResourceDoesNotExistError` (404)
+- `MethodNotAllowedError` (405)
+- `NotAcceptableError` (406)
+- `RequestTimeoutError` (408)
+- `ConflictError` (409)
+- `GoneError` (410)
+- `RateLimitError` (429)
+- `UnprocessableEntityError` (422)
+- `ExternalApiError` (424)
+- `GenericError` (500)
+- `NotImplementedError` (501)
+- `BadGatewayError` (502)
+- `GatewayTimeoutError` (504)
+- `MaintenanceModeError` (503)
 
-Create configured Axios instances with caching, retries, and error mapping:
-
-```typescript
-import { Builder, ErrorMap, RateLimitError, ExternalApiError } from '@callsy/http-kit'
-
-const errorMap = new ErrorMap()
-  .withError(RateLimitError, [429])
-  .withError(ExternalApiError, [500, 502, 503])
-  .withDefault(ExternalApiError)
-
-const httpClient = new Builder()
-  .withDefaults({ baseURL: 'https://api.example.com' })
-  .withRetry(3, 2000)
-  .withCustomCacheTTL(60)
-  .withErrorMapping(errorMap)
-  .build()
-
-// Use the client
-const response = await httpClient.get('/endpoint')
-```
-
-### Error Mapping
-
-Map external API errors to custom error classes:
-
-```typescript
-import { ErrorMap, RateLimitError, UnauthorizedError, ExternalApiError } from '@callsy/http-kit'
-
-const errorMap = new ErrorMap()
-  // Map by HTTP status code
-  .withError(RateLimitError, [429])
-  .withError(UnauthorizedError, [401, 403])
-
-  // Map by error message substring
-  .withError(RateLimitError, ['rate limit', 'too many requests'])
-
-  // Extract error message from nested path
-  .withCustomErrorPath('errors[0].detail')
-
-  // Set shop context
-  .withShop('my-shop.myshopify.com')
-
-  // Set default fallback error
-  .withDefault(ExternalApiError)
-```
-
-## Advanced Features
-
-### Error Serialization
-
-Errors can be serialized to JSON for API responses:
-
-```typescript
-const error = new InvalidInputError({ message: 'Invalid data' })
-const serialized = error.toObject()
-// {
-//   isCustomError: true,
-//   name: 'InvalidInputError',
-//   message: 'Invalid data',
-//   title: 'Invalid Input',
-//   description: '...',
-//   httpCode: 400,
-//   shop: null
-// }
-```
-
-In development mode, `debugMessage` and `stackTrace` are included automatically.
-
-### Builder Features
-
-- **Caching**: Built-in memory cache with configurable TTL
-- **Retry Logic**: Automatic retry for network errors, 5xx errors, 429, and 408
-- **Test Safety**: Blocks HTTP requests during tests (except to mock-server)
-- **Error Mapping**: Transform Axios errors to custom errors automatically
-
-## TypeScript
-
-Full TypeScript support with type definitions included.
-
-```typescript
-import type { JsonDict, CustomErrorProps } from '@callsy/http-kit'
-```
+And utility errors:
+- `CustomError` (Base class)
+- `InvalidInputError`
+- `RequiredValueError`
+- `MisconfiguredError`
+- `NotAllowedError`
 
 ## License
 
