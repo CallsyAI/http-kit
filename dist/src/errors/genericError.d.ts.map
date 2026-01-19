@@ -1,1 +1,0 @@
-{"version":3,"file":"genericError.d.ts","sourceRoot":"","sources":["../../../src/errors/genericError.ts"],"names":[],"mappings":"AAAA,OAAO,WAAW,EAAE,EAAC,gBAAgB,EAAC,MAAM,eAAe,CAAA;AAE3D,MAAM,CAAC,OAAO,OAAO,YAAa,SAAQ,WAAW;gBACvC,KAAK,CAAC,EAAE,gBAAgB;CAUrC"}
