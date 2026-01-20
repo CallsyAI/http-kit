@@ -437,3 +437,115 @@ test("FUNC customErrorPath WITH configured path EXPECT path returned", () => {
   const path = errorMap.customErrorPath
   expect(path).toBe("errors[0].detail")
 })
+
+test("FUNC withMatchEvent WITH status code match EXPECT callback called with error", () => {
+  let callbackCalled = false
+  let callbackError: any = null
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withMatchEvent((error) => {
+      callbackCalled = true
+      callbackError = error
+    })
+  const error = {response: {status: 400, data: {message: "Test error"}, statusText: "", headers: {}, config: {} as any}, message: "Test error"} as AxiosError
+  const result = errorMap.match(error)
+  expect(callbackCalled).toBe(true)
+  expect(callbackError).toBeInstanceOf(BadRequestError)
+  expect(result).toBe(callbackError)
+})
+
+test("FUNC withMatchEvent WITH message text match EXPECT callback called with error", () => {
+  let callbackCalled = false
+  let callbackError: any = null
+  const errorMap = new ErrorMap()
+    .withError(InvalidInputError, ["invalid data"])
+    .withMatchEvent((error) => {
+      callbackCalled = true
+      callbackError = error
+    })
+  const error = {response: {status: 500, data: {message: "Invalid data provided"}, statusText: "", headers: {}, config: {} as any}, message: "Invalid data provided"} as AxiosError
+  const result = errorMap.match(error)
+  expect(callbackCalled).toBe(true)
+  expect(callbackError).toBeInstanceOf(InvalidInputError)
+  expect(result).toBe(callbackError)
+})
+
+test("FUNC withMatchEvent WITH callback modifying debug message EXPECT modification preserved", () => {
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withMatchEvent((error) => {
+      error.setDebugMessage("Modified by callback")
+    })
+  const error = {response: {status: 400, data: {message: "Test"}, statusText: "", headers: {}, config: {} as any}, message: "Test"} as AxiosError
+  const result = errorMap.match(error)
+  expect(result?.getDebugMessage()).toBe("Modified by callback")
+})
+
+test("FUNC withMatchEvent WITH callback modifying multiple properties EXPECT all modifications preserved", () => {
+  const errorMap = new ErrorMap()
+    .withError(UnauthorizedError, [401])
+    .withMatchEvent((error) => {
+      error.setDebugMessage("Debug info")
+      error.setIsCritical(false)
+      error.setTitle("Custom title")
+    })
+  const error = {response: {status: 401, data: {}, statusText: "", headers: {}, config: {} as any}, message: "Unauthorized"} as AxiosError
+  const result = errorMap.match(error)
+  expect(result?.getDebugMessage()).toBe("Debug info")
+  expect(result?.getIsCritical()).toBe(false)
+  expect(result?.getTitle()).toBe("Custom title")
+})
+
+test("FUNC withMatchEvent WITH no matching error EXPECT callback not called", () => {
+  let callbackCalled = false
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withMatchEvent(() => {
+      callbackCalled = true
+    })
+  const error = {response: {status: 500, data: {message: "Server error"}, statusText: "", headers: {}, config: {} as any}, message: "Server error"} as AxiosError
+  const result = errorMap.match(error)
+  expect(callbackCalled).toBe(false)
+  expect(result).toBeNull()
+})
+
+test("FUNC withMatchEvent WITH null response EXPECT callback not called", () => {
+  let callbackCalled = false
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withMatchEvent(() => {
+      callbackCalled = true
+    })
+  const error = {response: null, message: "Network error"} as unknown as AxiosError
+  const result = errorMap.match(error)
+  expect(callbackCalled).toBe(false)
+  expect(result).toBeNull()
+})
+
+test("FUNC withMatchEvent WITH callback EXPECT method chaining works", () => {
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withMatchEvent((error) => {
+      error.setDebugMessage("Test")
+    })
+    .withDefault(GenericError)
+  const error = {response: {status: 400, data: {}, statusText: "", headers: {}, config: {} as any}, message: "Test"} as AxiosError
+  const result = errorMap.match(error)
+  expect(result).toBeInstanceOf(BadRequestError)
+  expect(result?.getDebugMessage()).toBe("Test")
+})
+
+test("FUNC withMatchEvent WITH default error used EXPECT callback not called", () => {
+  let callbackCalled = false
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withMatchEvent(() => {
+      callbackCalled = true
+    })
+    .withDefault(GenericError)
+  const error = {response: {status: 500, data: {message: "Server error"}, statusText: "", headers: {}, config: {} as any}, message: "Server error"} as AxiosError
+  const result = errorMap.match(error)
+  expect(callbackCalled).toBe(false)
+  expect(result).toBeInstanceOf(GenericError)
+  expect(result).not.toBeInstanceOf(BadRequestError)
+})

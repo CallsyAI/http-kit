@@ -9,6 +9,7 @@ export default class ErrorMap {
   private __mappings: ErrorMapping[] = []
   private __defaultError: ErrorConstructor | null = null
   private __customErrorPath: string | null = null
+  private __callback: ((error: CustomError) => void) | null = null
 
   public constructor(initialMappings?: ErrorMapping[]) {
     if (initialMappings) {
@@ -59,6 +60,14 @@ export default class ErrorMap {
     return this
   }
 
+  /**
+   * Executes a custom function when an error match was found.
+   */
+  public withMatchEvent(callback: (error: CustomError) => void): this {
+    this.__callback = callback
+    return this
+  }
+
   /** Matches a custom error against AxiosError. */
   public match(error: AxiosError): CustomError | null {
     if (!error.response) {
@@ -85,7 +94,9 @@ export default class ErrorMap {
 
         if (match) {
           // Found a match, return a new instance of the corresponding error.
-          return new mapping.error({message: originalErrorMessage})
+          const matchedError = new mapping.error({message: originalErrorMessage})
+          if (this.__callback) this.__callback(matchedError)
+          return matchedError
         }
       }
     }
