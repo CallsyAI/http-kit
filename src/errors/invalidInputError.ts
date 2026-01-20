@@ -1,4 +1,4 @@
-import CustomError, {CustomErrorProps} from "./customError"
+import CustomError, {CustomErrorProps} from "./customError.js"
 
 interface InvalidInputErrorProps extends CustomErrorProps {
   // A record of invalid fields where keys are field names

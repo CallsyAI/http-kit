@@ -1,5 +1,5 @@
-import RequiredValueError from "../../src/errors/requiredValueError"
-import CustomError from "../../src/errors/customError"
+import RequiredValueError from "../../src/errors/requiredValueError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new RequiredValueError()

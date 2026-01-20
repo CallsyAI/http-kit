@@ -1,10 +1,10 @@
-import Builder from "~/http/builder"
-import ErrorMap from "~/http/errorMap"
-import InvalidInputError from "~/errors/invalidInputError"
-import GenericError from "~/errors/genericError"
-import ExternalApiError from "~/errors/externalApiError"
-import CustomError from "~/errors/customError"
-import BadRequestError from "~/errors/badRequestError"
+import Builder from "../../src/http/builder.js"
+import ErrorMap from "../../src/http/errorMap.js"
+import InvalidInputError from "../../src/errors/invalidInputError.js"
+import GenericError from "../../src/errors/genericError.js"
+import ExternalApiError from "../../src/errors/externalApiError.js"
+import CustomError from "../../src/errors/customError.js"
+import BadRequestError from "../../src/errors/badRequestError.js"
 import {vi} from "vitest"
 
 test.each([

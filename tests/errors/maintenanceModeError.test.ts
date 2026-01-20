@@ -1,5 +1,5 @@
-import MaintenanceModeError from "../../src/errors/maintenanceModeError"
-import CustomError from "../../src/errors/customError"
+import MaintenanceModeError from "../../src/errors/maintenanceModeError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new MaintenanceModeError()

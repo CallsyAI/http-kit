@@ -1,5 +1,5 @@
-import ForbiddenError from "../../src/errors/forbiddenError"
-import CustomError from "../../src/errors/customError"
+import ForbiddenError from "../../src/errors/forbiddenError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new ForbiddenError()

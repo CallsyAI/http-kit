@@ -1,5 +1,5 @@
-import BadGatewayError from "../../src/errors/badGatewayError"
-import CustomError from "../../src/errors/customError"
+import BadGatewayError from "../../src/errors/badGatewayError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new BadGatewayError()

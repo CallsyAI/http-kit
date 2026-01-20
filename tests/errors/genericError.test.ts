@@ -1,5 +1,5 @@
-import GenericError from "../../src/errors/genericError"
-import CustomError from "../../src/errors/customError"
+import GenericError from "../../src/errors/genericError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new GenericError()

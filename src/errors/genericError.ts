@@ -1,4 +1,4 @@
-import CustomError, {CustomErrorProps} from "./customError"
+import CustomError, {CustomErrorProps} from "./customError.js"
 
 export default class GenericError extends CustomError {
   constructor(props?: CustomErrorProps) {

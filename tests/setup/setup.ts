@@ -1,6 +1,6 @@
-import {sharedCache} from "../../src/http/builder"
+import {sharedCache} from "../../src/http/builder.js"
 import {afterEach, beforeEach, afterAll, beforeAll} from "vitest"
-import mockServer, {resetAllCounters} from "./mockServer"
+import mockServer, {resetAllCounters} from "./mockServer.js"
 
 //-------------------------------
 // Validate environment.

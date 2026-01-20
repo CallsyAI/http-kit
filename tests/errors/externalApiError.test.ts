@@ -1,5 +1,5 @@
-import ExternalApiError from "../../src/errors/externalApiError"
-import CustomError from "../../src/errors/customError"
+import ExternalApiError from "../../src/errors/externalApiError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new ExternalApiError()

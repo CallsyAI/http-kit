@@ -1,5 +1,5 @@
-import InvalidInputError from "../../src/errors/invalidInputError"
-import CustomError from "../../src/errors/customError"
+import InvalidInputError from "../../src/errors/invalidInputError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no invalidFields EXPECT empty object", () => {
   const error = new InvalidInputError()

@@ -1,5 +1,5 @@
-import MethodNotAllowedError from "../../src/errors/methodNotAllowedError"
-import CustomError from "../../src/errors/customError"
+import MethodNotAllowedError from "../../src/errors/methodNotAllowedError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new MethodNotAllowedError()

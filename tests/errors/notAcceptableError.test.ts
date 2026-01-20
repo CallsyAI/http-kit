@@ -1,5 +1,5 @@
-import NotAcceptableError from "../../src/errors/notAcceptableError"
-import CustomError from "../../src/errors/customError"
+import NotAcceptableError from "../../src/errors/notAcceptableError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new NotAcceptableError()

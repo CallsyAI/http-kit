@@ -1,5 +1,5 @@
-import GoneError from "../../src/errors/goneError"
-import CustomError from "../../src/errors/customError"
+import GoneError from "../../src/errors/goneError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new GoneError()

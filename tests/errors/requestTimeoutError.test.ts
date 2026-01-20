@@ -1,5 +1,5 @@
-import RequestTimeoutError from "../../src/errors/requestTimeoutError"
-import CustomError from "../../src/errors/customError"
+import RequestTimeoutError from "../../src/errors/requestTimeoutError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new RequestTimeoutError()

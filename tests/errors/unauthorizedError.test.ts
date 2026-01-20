@@ -1,5 +1,5 @@
-import UnauthorizedError from "../../src/errors/unauthorizedError"
-import CustomError from "../../src/errors/customError"
+import UnauthorizedError from "../../src/errors/unauthorizedError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new UnauthorizedError()

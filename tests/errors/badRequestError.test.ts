@@ -1,5 +1,5 @@
-import BadRequestError from "../../src/errors/badRequestError"
-import CustomError from "../../src/errors/customError"
+import BadRequestError from "../../src/errors/badRequestError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new BadRequestError()

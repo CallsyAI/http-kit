@@ -1,5 +1,5 @@
-import RateLimitError from "../../src/errors/rateLimitError"
-import CustomError from "../../src/errors/customError"
+import RateLimitError from "../../src/errors/rateLimitError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new RateLimitError()

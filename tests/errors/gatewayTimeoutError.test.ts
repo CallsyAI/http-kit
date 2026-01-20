@@ -1,5 +1,5 @@
-import GatewayTimeoutError from "../../src/errors/gatewayTimeoutError"
-import CustomError from "../../src/errors/customError"
+import GatewayTimeoutError from "../../src/errors/gatewayTimeoutError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new GatewayTimeoutError()

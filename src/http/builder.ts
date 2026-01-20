@@ -1,7 +1,7 @@
 import axios, {AxiosError, AxiosRequestConfig, CreateAxiosDefaults} from 'axios'
 import axiosRetry, {IAxiosRetryConfig} from 'axios-retry'
 import {AxiosCacheInstance, buildMemoryStorage, CacheOptions, setupCache} from 'axios-cache-interceptor'
-import ErrorMap from "./errorMap"
+import ErrorMap from "./errorMap.js"
 
 export const sharedCache = buildMemoryStorage("double")
 

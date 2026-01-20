@@ -1,6 +1,6 @@
 import {AxiosError} from "axios"
 import {getProperty} from "dot-prop"
-import CustomError, {CustomErrorProps} from "../errors/customError"
+import CustomError, {CustomErrorProps} from "../errors/customError.js"
 
 type ErrorConstructor = new (props?: CustomErrorProps) => CustomError
 type ErrorMapping = { error: ErrorConstructor, triggers: (number | string)[] }

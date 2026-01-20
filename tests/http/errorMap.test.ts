@@ -1,11 +1,11 @@
-import ErrorMap from "~/http/errorMap"
-import GenericError from "~/errors/genericError"
+import ErrorMap from "../../src/http/errorMap.js"
+import GenericError from "../../src/errors/genericError.js"
 import {AxiosError} from "axios"
-import MisconfiguredError from "~/errors/misconfiguredError"
-import InvalidInputError from "~/errors/invalidInputError"
-import BadRequestError from "~/errors/badRequestError"
-import UnauthorizedError from "~/errors/unauthorizedError"
-import ExternalApiError from "~/errors/externalApiError"
+import MisconfiguredError from "../../src/errors/misconfiguredError.js"
+import InvalidInputError from "../../src/errors/invalidInputError.js"
+import BadRequestError from "../../src/errors/badRequestError.js"
+import UnauthorizedError from "../../src/errors/unauthorizedError.js"
+import ExternalApiError from "../../src/errors/externalApiError.js"
 
 const mockError = new AxiosError("Request failed with status code 500")
 

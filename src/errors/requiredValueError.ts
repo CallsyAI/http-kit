@@ -1,4 +1,4 @@
-import CustomError, {CustomErrorProps} from "./customError"
+import CustomError, {CustomErrorProps} from "./customError.js"
 
 /**
  * An error that explicitly tells that some given value was

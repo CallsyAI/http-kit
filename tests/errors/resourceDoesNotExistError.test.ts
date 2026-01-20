@@ -1,5 +1,5 @@
-import ResourceDoesNotExistError from "../../src/errors/resourceDoesNotExistError"
-import CustomError from "../../src/errors/customError"
+import ResourceDoesNotExistError from "../../src/errors/resourceDoesNotExistError.js"
+import CustomError from "../../src/errors/customError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new ResourceDoesNotExistError()
