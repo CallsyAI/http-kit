@@ -1,6 +1,7 @@
 import {AxiosError} from "axios"
 import {getProperty} from "dot-prop"
 import CustomError, {CustomErrorProps} from "../errors/customError.js"
+import {normalizeBinaryData} from "../util/normalizeBinaryData.js"
 
 type ErrorConstructor = new (props?: CustomErrorProps) => CustomError
 type ErrorMapping = { error: ErrorConstructor, triggers: (number | string)[] }
@@ -74,7 +75,10 @@ export default class ErrorMap {
       return null
     }
 
-    const {status, data} = error.response
+    const {status} = error.response
+
+    // Normalize binary data (Buffer/ArrayBuffer) to JSON for proper message extraction.
+    const data = normalizeBinaryData(error.response.data)
 
     // 1. Determine the final error message with a clear order of precedence.
     const nestedMessage = getProperty(data, this.customErrorPath || '')

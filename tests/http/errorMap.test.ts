@@ -549,3 +549,75 @@ test("FUNC withMatchEvent WITH default error used EXPECT callback not called", (
   expect(result).toBeInstanceOf(GenericError)
   expect(result).not.toBeInstanceOf(BadRequestError)
 })
+
+test("FUNC match WITH Buffer data (Node.js) EXPECT JSON parsed and message extracted", () => {
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withCustomErrorPath("detail.message")
+
+  const jsonData = JSON.stringify({detail: {message: "Buffer error message"}})
+  const bufferData = Buffer.from(jsonData, "utf-8")
+
+  const error = {
+    response: {status: 400, data: bufferData, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+
+  const result = errorMap.match(error)
+  expect(result).toBeInstanceOf(BadRequestError)
+  expect(result?.getMessage()).toBe("Buffer error message")
+})
+
+test("FUNC match WITH ArrayBuffer data (browser) EXPECT JSON parsed and message extracted", () => {
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withCustomErrorPath("detail.message")
+
+  const jsonData = JSON.stringify({detail: {message: "ArrayBuffer error message"}})
+  const encoder = new TextEncoder()
+  const arrayBufferData = encoder.encode(jsonData).buffer
+
+  const error = {
+    response: {status: 400, data: arrayBufferData, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+
+  const result = errorMap.match(error)
+  expect(result).toBeInstanceOf(BadRequestError)
+  expect(result?.getMessage()).toBe("ArrayBuffer error message")
+})
+
+test("FUNC match WITH invalid Buffer JSON EXPECT fallback to error.message", () => {
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withCustomErrorPath("detail.message")
+
+  const invalidData = Buffer.from("not valid json", "utf-8")
+
+  const error = {
+    response: {status: 400, data: invalidData, statusText: "", headers: {}, config: {} as any},
+    message: "Fallback message"
+  } as AxiosError
+
+  const result = errorMap.match(error)
+  expect(result).toBeInstanceOf(BadRequestError)
+  expect(result?.getMessage()).toBe("Fallback message")
+})
+
+test("FUNC match WITH Buffer and nested custom path EXPECT deep property extracted", () => {
+  const errorMap = new ErrorMap()
+    .withError(BadRequestError, [400])
+    .withCustomErrorPath("errors[0].detail")
+
+  const jsonData = JSON.stringify({errors: [{detail: "Nested buffer error"}]})
+  const bufferData = Buffer.from(jsonData, "utf-8")
+
+  const error = {
+    response: {status: 400, data: bufferData, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+
+  const result = errorMap.match(error)
+  expect(result).toBeInstanceOf(BadRequestError)
+  expect(result?.getMessage()).toBe("Nested buffer error")
+})
