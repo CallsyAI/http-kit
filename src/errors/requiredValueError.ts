@@ -5,9 +5,11 @@ import CustomError, {CustomErrorProps} from "./customError.js"
  * not supposed to be null / undefined or falsy in general.
  */
 export default class RequiredValueError extends CustomError {
+  public static readonly NAME = "RequiredValueError"
+
   constructor(props?: CustomErrorProps) {
     super({
-      name: "RequiredValueError",
+      name: RequiredValueError.NAME,
       message: "Value can not be empty.",
       title: "Provided value is empty",
       description: "The provided value was empty, but it can not be empty. Please check your input and try again.",
@@ -16,3 +18,5 @@ export default class RequiredValueError extends CustomError {
     })
   }
 }
+
+CustomError.register(RequiredValueError)

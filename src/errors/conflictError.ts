@@ -1,9 +1,11 @@
 import CustomError, {CustomErrorProps} from "./customError.js"
 
 export default class ConflictError extends CustomError {
+  public static readonly NAME = "ConflictError"
+
   constructor(props?: CustomErrorProps) {
     super({
-      name: "ConflictError",
+      name: ConflictError.NAME,
       message: "Conflict.",
       title: "Conflict",
       description: "The request conflicts with the current state of the server.",
@@ -12,3 +14,5 @@ export default class ConflictError extends CustomError {
     })
   }
 }
+
+CustomError.register(ConflictError)

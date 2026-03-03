@@ -80,12 +80,21 @@ export default class ErrorMap {
     // Normalize binary data (Buffer/ArrayBuffer) to JSON for proper message extraction.
     const data = normalizeBinaryData(error.response.data)
 
-    // 1. Determine the final error message with a clear order of precedence.
+    // 1. Try to deserialize a serialized custom error directly from the response body.
+    if (CustomError.isError(data)) {
+      const deserialized = CustomError.fromObject(data)
+      if (deserialized) {
+        if (this.__callback) this.__callback(deserialized)
+        return deserialized
+      }
+    }
+
+    // 2. Determine the final error message with a clear order of precedence.
     const nestedMessage = getProperty(data, this.customErrorPath || '')
     const originalErrorMessage = String(nestedMessage || (data as any)?.error || (data as any)?.message || error.message)
     const tmpErrorMessage = originalErrorMessage.toLowerCase().trim()
 
-    // 2. Check specific mappings for a match.
+    // 3. Check specific trigger mappings for a match.
     for (const mapping of this.mappings) {
       for (const trigger of mapping.triggers) {
         let match = false
@@ -105,12 +114,12 @@ export default class ErrorMap {
       }
     }
 
-    // 3. If no specific mappings matched, use the default error if it exists.
+    // 4. If no specific mappings matched, use the default error if it exists.
     if (this.defaultError) {
       return new this.defaultError({message: originalErrorMessage})
     }
 
-    // 4. If nothing matches, return null to indicate no custom error was found.
+    // 5. If nothing matches, return null to indicate no custom error was found.
     return null
   }
 }

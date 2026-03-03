@@ -9,6 +9,10 @@ export interface CustomErrorProps {
 }
 
 export default class CustomError extends Error {
+  public static readonly NAME: string = "CustomError"
+  
+  private static readonly errorRegistry = new Map<string, new (props?: any) => CustomError>()
+
   public readonly isCustomError: boolean = true
 
   protected title: string
@@ -22,7 +26,7 @@ export default class CustomError extends Error {
 
     super(message)
 
-    this.name = props?.name || "CustomError"
+    this.name = props?.name || CustomError.NAME
     this.message = message
 
     this.title = props?.title || "Custom Error"
@@ -128,6 +132,14 @@ export default class CustomError extends Error {
   //-------------------------------
 
   /**
+   * Registers an error class for type-preserving deserialization.
+   * The class must have public static `NAME` property.
+   */
+  public static register(ErrorClass: (new (props?: any) => CustomError) & { NAME: string }): void {
+    CustomError.errorRegistry.set(ErrorClass.NAME, ErrorClass)
+  }
+
+  /**
    * Returns a clean stack trace.
    */
   public getStackTrace(): string[] {
@@ -176,20 +188,13 @@ export default class CustomError extends Error {
   }
 
   /**
-   * Deserializes object to an error instance.
+   * Deserializes object to a specific error instance preserving type, methods, and properties.
    */
   public static fromObject(obj: any): CustomError | null {
     if (!CustomError.isError(obj)) return null
-
-    return new CustomError({
-      name: (obj.name as string) ?? undefined,
-      message: (obj.message as string) ?? undefined,
-      title: (obj.title as string) ?? undefined,
-      description: (obj.description as string) ?? undefined,
-      httpCode: (obj.httpCode as number) ?? undefined,
-      isCritical: (obj.isCritical as boolean) ?? undefined,
-      debugMessage: (obj.debugMessage as string) ?? undefined
-    })
+    const ErrorClass = CustomError.errorRegistry.get(obj.name)
+    if (ErrorClass) return new ErrorClass(obj)
+    return new CustomError(obj)
   }
 
   /**

@@ -1,9 +1,11 @@
 import CustomError, {CustomErrorProps} from "./customError.js"
 
 export default class GoneError extends CustomError {
+  public static readonly NAME = "GoneError"
+
   constructor(props?: CustomErrorProps) {
     super({
-      name: "GoneError",
+      name: GoneError.NAME,
       message: "Resource gone.",
       title: "Resource gone",
       description: "The requested resource is no longer available and will not be available again.",
@@ -12,3 +14,5 @@ export default class GoneError extends CustomError {
     })
   }
 }
+
+CustomError.register(GoneError)

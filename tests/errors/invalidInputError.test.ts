@@ -83,3 +83,19 @@ test("FUNC constructor WITH custom httpCode EXPECT override applied", () => {
 
   expect(error.getHttpCode()).toBe(422)
 })
+
+test("FUNC fromObject WITH serialized InvalidInputError EXPECT getInvalidFields works", () => {
+  const fields = {email: "Invalid format", name: "Too short"}
+  const original = new InvalidInputError({invalidFields: fields, message: "Check inputs"})
+
+  // Serialize and deserialize round-trip.
+  const obj = original.toObject()
+  const deserialized = CustomError.fromObject(obj)
+
+  expect(deserialized).toBeInstanceOf(InvalidInputError)
+  expect(deserialized).toBeInstanceOf(CustomError)
+  expect((deserialized as InvalidInputError).getInvalidFields()).toEqual(fields)
+  expect(deserialized?.getName()).toBe(InvalidInputError.NAME)
+  expect(deserialized?.getMessage()).toBe("Check inputs")
+  expect(deserialized?.getHttpCode()).toBe(400)
+})

@@ -1,9 +1,11 @@
 import CustomError, {CustomErrorProps} from "./customError.js"
 
 export default class ResourceDoesNotExistError extends CustomError {
+  public static readonly NAME = "ResourceDoesNotExistError"
+
   constructor(props?: CustomErrorProps) {
     super({
-      name: "ResourceDoesNotExistError",
+      name: ResourceDoesNotExistError.NAME,
       message: "Resource does not exist.",
       title: "The requested resource could not be found",
       description: "You just requested a resource that is not (or no longer) in the system. Maybe it was recently deleted?",
@@ -12,3 +14,5 @@ export default class ResourceDoesNotExistError extends CustomError {
     })
   }
 }
+
+CustomError.register(ResourceDoesNotExistError)

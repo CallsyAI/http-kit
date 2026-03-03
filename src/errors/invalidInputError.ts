@@ -7,11 +7,13 @@ interface InvalidInputErrorProps extends CustomErrorProps {
 }
 
 export default class InvalidInputError extends CustomError {
+  public static readonly NAME = "InvalidInputError"
+
   private invalidFields?: Record<string, string> = {}
 
   constructor(props?: InvalidInputErrorProps) {
     super({
-      name: "InvalidInputError",
+      name: InvalidInputError.NAME,
       message: "Invalid input.",
       title: "Some of the inputs are not correct",
       description: "You have provided information that is not valid. Please check your input and try again.",
@@ -32,3 +34,5 @@ export default class InvalidInputError extends CustomError {
     }
   }
 }
+
+CustomError.register(InvalidInputError)

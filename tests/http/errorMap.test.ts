@@ -621,3 +621,110 @@ test("FUNC match WITH Buffer and nested custom path EXPECT deep property extract
   expect(result).toBeInstanceOf(BadRequestError)
   expect(result?.getMessage()).toBe("Nested buffer error")
 })
+
+test("FUNC match WITH serialized bad request error EXPECT deserialized to correct type", () => {
+  const serialized = new BadRequestError({message: "Serialized bad request."}).toObject()
+  const errorMap = new ErrorMap()
+  
+  const error = {
+    response: {status: 400, data: serialized, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+  
+  const result = errorMap.match(error)
+  
+  expect(result).toBeInstanceOf(BadRequestError)
+  expect(result?.getMessage()).toBe("Serialized bad request.")
+  expect(result?.getHttpCode()).toBe(400)
+  expect(result?.getTitle()).toBe("Bad request")
+})
+
+test("FUNC match WITH serialized error with invalid fields EXPECT fields preserved", () => {
+  const fields = {email: "Invalid format.", name: "Too short."}
+  const serialized = new InvalidInputError({message: "Validation failed.", invalidFields: fields}).toObject()
+  const errorMap = new ErrorMap()
+  
+  const error = {
+    response: {status: 400, data: serialized, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+  
+  const result = errorMap.match(error)
+  
+  expect(result).toBeInstanceOf(InvalidInputError)
+  expect((result as InvalidInputError).getInvalidFields()).toEqual({email: "Invalid format.", name: "Too short."})
+})
+
+test("FUNC match WITH serialized error and trigger mappings EXPECT deserialization takes precedence", () => {
+  const serialized = new UnauthorizedError({message: "Token expired."}).toObject()
+  const errorMap = new ErrorMap().withError(BadRequestError, [401])
+  
+  const error = {
+    response: {status: 401, data: serialized, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+  
+  const result = errorMap.match(error)
+  
+  expect(result).toBeInstanceOf(UnauthorizedError)
+  expect(result).not.toBeInstanceOf(BadRequestError)
+})
+
+test("FUNC match WITH serialized error and callback EXPECT callback called", () => {
+  let callbackError: any = null
+  const serialized = new BadRequestError({message: "Test."}).toObject()
+  const errorMap = new ErrorMap().withMatchEvent((error) => { callbackError = error })
+  
+  const error = {
+    response: {status: 400, data: serialized, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+  
+  const result = errorMap.match(error)
+  
+  expect(callbackError).toBeInstanceOf(BadRequestError)
+  expect(result).toBe(callbackError)
+})
+
+test("FUNC match WITH serialized error in buffer EXPECT deserialized from binary data", () => {
+  const serialized = new BadRequestError({message: "Buffer serialized."}).toObject()
+  const bufferData = Buffer.from(JSON.stringify(serialized), "utf-8")
+  const errorMap = new ErrorMap()
+  
+  const error = {
+    response: {status: 400, data: bufferData, statusText: "", headers: {}, config: {} as any},
+    message: "Request failed"
+  } as AxiosError
+  
+  const result = errorMap.match(error)
+  
+  expect(result).toBeInstanceOf(BadRequestError)
+  expect(result?.getMessage()).toBe("Buffer serialized.")
+})
+
+test("FUNC match WITH non-serialized data EXPECT fallback to trigger mapping", () => {
+  const errorMap = new ErrorMap().withError(GenericError, [500])
+  
+  const error = {
+    response: {status: 500, data: {message: "Regular error."}, statusText: "", headers: {}, config: {} as any},
+    message: "Regular error."
+  } as AxiosError
+  
+  const result = errorMap.match(error)
+  
+  expect(result).toBeInstanceOf(GenericError)
+  expect(result?.getMessage()).toBe("Regular error.")
+})
+
+test("FUNC match WITH null data EXPECT fallback to default error", () => {
+  const errorMap = new ErrorMap().withDefault(GenericError)
+  
+  const error = {
+    response: {status: 500, data: null, statusText: "", headers: {}, config: {} as any},
+    message: "Server error."
+  } as AxiosError
+  
+  const result = errorMap.match(error)
+  
+  expect(result).toBeInstanceOf(GenericError)
+})

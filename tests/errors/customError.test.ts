@@ -1,4 +1,6 @@
 import CustomError from "../../src/errors/customError.js"
+import BadRequestError from "../../src/errors/badRequestError.js"
+import InvalidInputError from "../../src/errors/invalidInputError.js"
 
 test("FUNC constructor WITH no props EXPECT default values", () => {
   const error = new CustomError()
@@ -379,4 +381,59 @@ test("FUNC throwIfError WITH object missing isCustomError EXPECT no throw", () =
   expect(() => {
     CustomError.throwIfError(obj)
   }).not.toThrow()
+})
+
+test("FUNC fromObject WITH serialized BadRequestError EXPECT BadRequestError instance", () => {
+  const original = new BadRequestError({message: "Invalid request data"})
+  const obj = original.toObject()
+
+  const deserialized = CustomError.fromObject(obj)
+
+  expect(deserialized).toBeInstanceOf(BadRequestError)
+  expect(deserialized).toBeInstanceOf(CustomError)
+  expect(deserialized?.getName()).toBe(BadRequestError.NAME)
+  expect(deserialized?.getMessage()).toBe("Invalid request data")
+  expect(deserialized?.getHttpCode()).toBe(400)
+})
+
+test("FUNC fromObject WITH serialized InvalidInputError EXPECT preserved invalidFields", () => {
+  const fields = {email: "Invalid format", age: "Must be positive"}
+  const original = new InvalidInputError({invalidFields: fields, message: "Validation failed"})
+  const obj = original.toObject()
+
+  const deserialized = CustomError.fromObject(obj)
+
+  expect(deserialized).toBeInstanceOf(InvalidInputError)
+  expect((deserialized as InvalidInputError).getInvalidFields()).toEqual(fields)
+  expect(deserialized?.getMessage()).toBe("Validation failed")
+})
+
+test("FUNC fromObject WITH unregistered error name EXPECT fallback to CustomError", () => {
+  const obj = {
+    isCustomError: true,
+    name: "SomeUnknownError",
+    message: "Unknown",
+    title: "Unknown",
+    description: "Unknown error.",
+    httpCode: 500,
+    isCritical: true
+  }
+
+  const deserialized = CustomError.fromObject(obj)
+
+  expect(deserialized).toBeInstanceOf(CustomError)
+  expect(deserialized?.getName()).toBe("SomeUnknownError")
+})
+
+test("FUNC throwIfError WITH serialized BadRequestError EXPECT BadRequestError thrown", () => {
+  const original = new BadRequestError({message: "Bad input"})
+  const obj = original.toObject()
+
+  try {
+    CustomError.throwIfError(obj)
+    expect.unreachable("Should have thrown")
+  } catch (error) {
+    expect(error).toBeInstanceOf(BadRequestError)
+    expect((error as BadRequestError).getMessage()).toBe("Bad input")
+  }
 })

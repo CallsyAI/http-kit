@@ -74,7 +74,8 @@ The `Builder` provides a clean, chainable API to construct your `axios` client.
 
 ### Advanced Error Handling with ErrorMap
 
-The `ErrorMap` gives you fine-grained control over how errors are translated.
+- The `ErrorMap` gives you fine-grained control over how errors are translated.
+- When an HTTP response body contains a serialized custom error, `ErrorMap` automatically deserializes it to the correct error type before applying any trigger-based mappings.
 
 ```typescript
 import { ErrorMap, RateLimitError, UnauthorizedError, ExternalApiError, GenericError } from '@callsy/http-kit';
@@ -93,7 +94,7 @@ const errorMap = new ErrorMap()
   .withDefault(ExternalApiError);
 ```
 
-### Error Serialization
+### Error Serialization & Deserialization
 
 A key feature of `@callsy/http-kit` is the ability to serialize custom errors to plain objects and deserialize them back into class instances. This is incredibly useful for passing errors between services or from your backend to your frontend.
 
@@ -139,7 +140,7 @@ if (errorInstance) {
 You can also safely check and throw the error in one go:
 
 ```typescript
-// Throws a fully reconstructed error if the object is a custom error
+// Throws a fully reconstructed (deserialised) error if the object is a custom error
 CustomError.throwIfError(apiResponse);
 ```
 
@@ -172,6 +173,33 @@ And utility errors:
 - `RequiredValueError`
 - `MisconfiguredError`
 - `NotAllowedError`
+
+### Custom Error Classes
+
+- You can create your own custom errors that extend `CustomError`.
+- Make sure your custom error contains `public static readonly NAME = 'YourCustomErrorName'`.
+- Make sure your custom error is registered `CustomError.register(YourCustomError)`.
+
+Example:
+
+```typescript
+import { CustomError, CustomErrorProps } from '@callsy/http-kit'
+
+class MyAppError extends CustomError {
+  public static readonly NAME = 'MyAppError'
+
+  constructor(props?: CustomErrorProps) {
+    super({
+      name: MyAppError.NAME,
+      message: 'Something app-specific went wrong.',
+      httpCode: 422,
+      ...props
+    })
+  }
+}
+
+CustomError.register(MyAppError)
+```
 
 ## License
 
