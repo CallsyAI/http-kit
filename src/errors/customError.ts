@@ -31,8 +31,8 @@ export default class CustomError extends Error {
 
     this.title = props?.title || "Custom Error"
     this.description = props?.description || "Unspecific custom error occurred."
-    this.httpCode = props?.httpCode || 500
-    this.isCritical = props?.isCritical || true
+    this.httpCode = props?.httpCode ?? 500
+    this.isCritical = props?.isCritical ?? true
     this.debugMessage = props?.debugMessage || null
   }
 

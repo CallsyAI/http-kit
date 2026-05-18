@@ -46,7 +46,7 @@ test("FUNC constructor WITH full props EXPECT all values set", () => {
   expect(error.getTitle()).toBe("Full Title")
   expect(error.getDescription()).toBe("Full description")
   expect(error.getHttpCode()).toBe(404)
-  expect(error.getIsCritical()).toBe(true)
+  expect(error.getIsCritical()).toBe(false)
   expect(error.getDebugMessage()).toBe("Debug info")
 })
 
@@ -203,7 +203,7 @@ test("FUNC toObject WITH debug false EXPECT basic fields only", () => {
   expect(obj.title).toBe("Title")
   expect(obj.description).toBe("Description")
   expect(obj.httpCode).toBe(400)
-  expect(obj.isCritical).toBe(true)
+  expect(obj.isCritical).toBe(false)
   expect(obj.debugMessage).toBeUndefined()
   expect(obj.stackTrace).toBeUndefined()
 })
