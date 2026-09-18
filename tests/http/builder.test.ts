@@ -1,4 +1,4 @@
-import Builder from "../../src/http/builder.js"
+import Builder, {sharedCache} from "../../src/http/builder.js"
 import ErrorMap from "../../src/http/errorMap.js"
 import InvalidInputError from "../../src/errors/invalidInputError.js"
 import GenericError from "../../src/errors/genericError.js"
@@ -325,4 +325,22 @@ test("FUNC withErrorMapping WITH null EXPECT no error mapping applied", async ()
 
   const error = await instance.get("https://mock-server/expect/status/500").catch((e: any) => e)
   expect(error).not.toBeInstanceOf(ExternalApiError)
+})
+
+test("FUNC build WITH more unique requests than the store holds EXPECT store bounded", async () => {
+  const instance = new Builder().withCache(10).build()
+
+  // Each request carries a parameter of its own, so every one of them claims a cache
+  // key nothing ever asks for again. A store that only reclaimed an entry on repeat
+  // access would end up holding all of them, and grow for as long as the process runs.
+  const requests = 1200
+
+  for (let index = 0; index < requests; index++) {
+    await instance.get("https://mock-server/expect/status/200", {params: {index}})
+  }
+
+  const data: unknown = sharedCache.data
+  const entries = data instanceof Map ? data.size : Object.keys(data as object).length
+
+  expect(entries).toBeLessThan(requests)
 })
