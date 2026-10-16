@@ -6,6 +6,7 @@ import ExternalApiError from "../../src/errors/externalApiError.js"
 import CustomError from "../../src/errors/customError.js"
 import BadRequestError from "../../src/errors/badRequestError.js"
 import {vi} from "vitest"
+import {AxiosError, InternalAxiosRequestConfig} from "axios"
 
 test.each([
   {endpoint: "https://mock-server/expect/status/200", type: "get" as const, expected: 200, cacheable: true},
@@ -133,7 +134,6 @@ test("FUNC withCache WITH 1 second ttl EXPECT cache expires after time", async (
   expect(response2.data.count).toBe(2)
   expect(response2.cached).toBe(false)
 
-  vi.restoreAllMocks()
 })
 
 test("FUNC withCache WITH 5 second ttl EXPECT cache valid within time", async () => {
@@ -149,7 +149,6 @@ test("FUNC withCache WITH 5 second ttl EXPECT cache valid within time", async ()
   expect(response2.data.count).toBe(1)
   expect(response2.cached).toBe(true)
 
-  vi.restoreAllMocks()
 })
 
 test("FUNC withCache WITH 0 second ttl EXPECT no caching", async () => {
@@ -239,6 +238,69 @@ test("FUNC withDefaults WITH auth config EXPECT auth header sent", async () => {
 test("FUNC withRetry WITH network error EXPECT retries network failures", async () => {
   const instance = new Builder().withRetry(3, 1).build()
   await expect(instance.get("https://localhost:99999/invalid")).rejects.toThrow()
+})
+
+test("FUNC withTimeoutRetries WITH timed out GET EXPECT second attempt succeeds", async () => {
+  const instance = new Builder().withDefaults({timeout: 50}).withRetry(2, 1).withTimeoutRetries().build()
+
+  // The retry gets a fresh 50 ms timeout. A shared budget would be spent already.
+  const response = await instance.get("https://mock-server/slow-once")
+  expect(response.data.count).toBe(2)
+})
+
+test.each([
+  {clarifyTimeoutError: false, code: "ECONNABORTED"},
+  {clarifyTimeoutError: true, code: "ETIMEDOUT"},
+])
+("FUNC withTimeoutRetries WITH POST timed out with $code EXPECT no retry attempts", async ({clarifyTimeoutError, code}) => {
+  const instance = new Builder()
+    .withDefaults({timeout: 50, transitional: {clarifyTimeoutError}})
+    .withRetry(2, 1)
+    .withTimeoutRetries()
+    .build()
+
+  const error = await instance.post("https://mock-server/slow-once").catch((e: any) => e)
+  expect(error.code).toBe(code)
+
+  // The follow-up is the second call, so the POST was sent once.
+  const response = await instance.post("https://mock-server/slow-once")
+  expect(response.data.count).toBe(2)
+})
+
+test("FUNC withTimeoutRetries WITH slow server error EXPECT every retry gets a fresh timeout", async () => {
+  const instance = new Builder().withDefaults({timeout: 100}).withRetry(2, 1).withTimeoutRetries().build()
+
+  // Each call takes 60 ms. A shared 100 ms budget would time out the second call.
+  const error = await instance.get("https://mock-server/slow-error").catch((e: any) => e)
+  expect(error.response.status).toBe(500)
+  expect(error.response.data.count).toBe(3)
+})
+
+test("FUNC withRetry WITH timed out GET EXPECT no retry attempts", async () => {
+  const instance = new Builder().withDefaults({timeout: 50}).withRetry(2, 1).build()
+
+  const error = await instance.get("https://mock-server/slow-once").catch((e: any) => e)
+  expect(error.code).toBe("ECONNABORTED")
+
+  // The follow-up is the second call, so the GET was sent once.
+  const response = await instance.get("https://mock-server/slow-once")
+  expect(response.data.count).toBe(2)
+})
+
+test("FUNC withRetry WITH POST failing with ETIMEDOUT and no timeout set EXPECT retried as network error", async () => {
+  let calls = 0
+
+  // A connect timeout from Node fails with ETIMEDOUT before any axios timeout applies.
+  const adapter = async (config: InternalAxiosRequestConfig) => {
+    calls++
+    throw new AxiosError("connect ETIMEDOUT", "ETIMEDOUT", config)
+  }
+
+  const instance = new Builder().withDefaults({adapter}).withRetry(2, 1).build()
+
+  const error = await instance.post("https://mock-server/expect/status/200").catch((e: any) => e)
+  expect(error.code).toBe("ETIMEDOUT")
+  expect(calls).toBe(3)
 })
 
 test("FUNC withRetry WITH 0 retries EXPECT no retry attempts", async () => {
