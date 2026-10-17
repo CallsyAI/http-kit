@@ -2,6 +2,8 @@ import axios, {AxiosError, AxiosRequestConfig, CreateAxiosDefaults} from 'axios'
 import axiosRetry, {IAxiosRetryConfig} from 'axios-retry'
 import {AxiosCacheInstance, buildMemoryStorage, CacheOptions, setupCache} from 'axios-cache-interceptor'
 import ErrorMap from "./errorMap.js"
+import {isIdempotent} from "../util/isIdempotent.js"
+import {isTimeout} from "../util/isTimeout.js"
 
 export const sharedCache = buildMemoryStorage("double")
 
@@ -16,22 +18,31 @@ export default class Builder {
     return this
   }
 
+  /**
+   * Retries requests that failed with a network error, a timeout, a 5xx, a 408 or a 429.
+   * A timed out request is retried only for an idempotent method.
+   * Every retry gets a fresh timeout.
+   */
   public withRetry(retries: number = 3, retryDelayMultiplier: number = 2000): this {
     this.retryConfig = {
       retries,
+      shouldResetTimeout: true,
       onRetry: (retryCount: number, error: AxiosError, requestConfig: AxiosRequestConfig) => {
-        console.warn(`Retrying failed HTTP (${error.response?.status}) request to ${requestConfig.method} ${requestConfig.url}. Retry attempt: ${retryCount}. Failure message: ${error.message}.`)
+        console.warn(`Retrying failed HTTP (${error.response?.status ?? error.code}) request to ${requestConfig.method} ${requestConfig.url}. Retry attempt: ${retryCount}. Failure message: ${error.message}.`)
         return
       },
       retryDelay: (retryCount) => {
         return retryCount * retryDelayMultiplier
       },
       retryCondition: (error: AxiosError) => {
+        // A timed out write may already have reached the server.
+        if (isTimeout(error)) return isIdempotent(error)
+
         const networkError = axiosRetry.isNetworkOrIdempotentRequestError(error)
         const serverError = !!error.response && error.response.status >= 500 && error.response.status < 600
         const rateLimited = !!error.response && error.response.status === 429
-        const timeout = !!error.response && error.response.status === 408
-        return networkError || serverError || rateLimited || timeout
+        const requestTimeout = !!error.response && error.response.status === 408
+        return networkError || serverError || rateLimited || requestTimeout
       },
     }
     return this

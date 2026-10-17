@@ -68,7 +68,7 @@ async function getUser(id: string) {
 The `Builder` provides a clean, chainable API to construct your `axios` client.
 
 - `.withDefaults({ ... })`: Sets default `axios` request configuration (e.g., `baseURL`, `headers`, `timeout`).
-- `.withRetry(retries, delay)`: Enables automatic retries for failed requests. Retries on network errors, 5xx status codes, 408 (Request Timeout), and 429 (Too Many Requests).
+- `.withRetry(retries, delay)`: Enables automatic retries for failed requests. Retries on network errors, 5xx status codes, 408 (Request Timeout), and 429 (Too Many Requests). Also retries timed out `GET`, `HEAD`, `OPTIONS`, `PUT` and `DELETE` requests. Timed out `POST` and `PATCH` requests are never retried, because they may already have reached the server. Every retry gets a fresh timeout.
 - `.withCache(ttlSeconds)`: Enables in-memory caching for `GET` requests with a specified Time-To-Live.
 - `.withErrorMapping(errorMap)`: Attaches an `ErrorMap` to translate HTTP errors into custom error classes.
 

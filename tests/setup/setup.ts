@@ -1,5 +1,5 @@
 import {sharedCache} from "../../src/http/builder.js"
-import {afterEach, beforeEach, afterAll, beforeAll} from "vitest"
+import {afterEach, beforeEach, afterAll, beforeAll, vi} from "vitest"
 import mockServer, {resetAllCounters} from "./mockServer.js"
 
 //-------------------------------
@@ -27,6 +27,9 @@ beforeEach(async () => {
 afterEach(() => {
   // Reset mock-fake test server.
   mockServer.resetHandlers()
+
+  // Restore real timers after tests that fake them.
+  vi.useRealTimers()
 })
 
 beforeAll(async () => {

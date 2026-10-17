@@ -9,6 +9,12 @@ const resetFunctions: (() => void)[] = []
 // Counter for intermittent endpoint.
 let intermittentCount = 0
 
+// Counter for slow once endpoint.
+let slowOnceCount = 0
+
+// Counter for slow error endpoint.
+let slowErrorCount = 0
+
 /**
  * Dynamically creates a list of endpoints (get, post, delete, etc...) that return a predetermined
  * http code and some other additional info, for example, how many times the endpoint was called.
@@ -83,6 +89,22 @@ export const handlers = [
     return HttpResponse.json({success: true, count: intermittentCount}, {status: 200})
   }),
 
+  // Slow once (delays the first call by 200 ms, answers at once afterwards).
+  ...httpMethods.map(method =>
+    http[method]('https://mock-server/slow-once', async () => {
+      slowOnceCount++
+      if (slowOnceCount === 1) await new Promise(resolve => setTimeout(resolve, 200))
+      return HttpResponse.json({count: slowOnceCount}, {status: 200})
+    })
+  ),
+
+  // Slow error (delays every call by 60 ms, then fails with 500).
+  http.get('https://mock-server/slow-error', async () => {
+    slowErrorCount++
+    await new Promise(resolve => setTimeout(resolve, 60))
+    return HttpResponse.json({count: slowErrorCount}, {status: 500})
+  }),
+
   // Timeout endpoint (delays 5 seconds).
   http.get('https://mock-server/expect/timeout', async () => {
     await new Promise(resolve => setTimeout(resolve, 5000))
@@ -129,6 +151,8 @@ export const handlers = [
 export const resetAllCounters = () => {
   resetFunctions.forEach(resetFn => resetFn())
   intermittentCount = 0
+  slowOnceCount = 0
+  slowErrorCount = 0
 }
 
 const mockServer = setupServer(...handlers)
