@@ -2,8 +2,8 @@ import axios, {AxiosError, AxiosRequestConfig, CreateAxiosDefaults} from 'axios'
 import axiosRetry, {IAxiosRetryConfig} from 'axios-retry'
 import {AxiosCacheInstance, buildMemoryStorage, CacheOptions, setupCache} from 'axios-cache-interceptor'
 import ErrorMap from "./errorMap.js"
-import {isIdempotent} from "../util/isIdempotent.js"
-import {isTimeout} from "../util/isTimeout.js"
+import {hasIdempotentMethod} from "../util/hasIdempotentMethod.js"
+import {isTimeoutError} from "../util/isTimeoutError.js"
 
 export const sharedCache = buildMemoryStorage("double")
 
@@ -19,7 +19,8 @@ export default class Builder {
   }
 
   /**
-   * Retries requests that failed with a network error, a timeout, a 5xx, a 408 or a 429.
+   * Retries failed requests.
+   * A failure is a network error, a timeout, a 5xx, a 408 or a 429.
    * A timed out request is retried only for an idempotent method.
    * Every retry gets a fresh timeout.
    */
@@ -35,8 +36,8 @@ export default class Builder {
         return retryCount * retryDelayMultiplier
       },
       retryCondition: (error: AxiosError) => {
-        // A timed out write may already have reached the server.
-        if (isTimeout(error)) return isIdempotent(error)
+        // A timed out request with a non-idempotent method may already have reached the server.
+        if (isTimeoutError(error)) return hasIdempotentMethod(error)
 
         const networkError = axiosRetry.isNetworkOrIdempotentRequestError(error)
         const serverError = !!error.response && error.response.status >= 500 && error.response.status < 600

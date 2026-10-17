@@ -132,7 +132,6 @@ test("FUNC withCache WITH 1 second ttl EXPECT cache expires after time", async (
   const response2 = await instance.get("https://mock-server/expect/status/200")
   expect(response2.data.count).toBe(2)
   expect(response2.cached).toBe(false)
-
 })
 
 test("FUNC withCache WITH 5 second ttl EXPECT cache valid within time", async () => {
@@ -147,7 +146,6 @@ test("FUNC withCache WITH 5 second ttl EXPECT cache valid within time", async ()
   const response2 = await instance.get("https://mock-server/expect/status/200")
   expect(response2.data.count).toBe(1)
   expect(response2.cached).toBe(true)
-
 })
 
 test("FUNC withCache WITH 0 second ttl EXPECT no caching", async () => {
@@ -239,36 +237,42 @@ test("FUNC withRetry WITH network error EXPECT retries network failures", async 
   await expect(instance.get("https://localhost:99999/invalid")).rejects.toThrow()
 })
 
-test("FUNC withRetry WITH timed out GET EXPECT retried with a fresh timeout", async () => {
+test.each([
+  {method: "get"},
+  {method: "put"},
+  {method: "delete"},
+])
+("FUNC withRetry WITH timed out $method EXPECT retried with a fresh timeout", async ({method}) => {
   const instance = new Builder().withDefaults({timeout: 50}).withRetry(2, 1).build()
 
   // The retry gets a fresh 50 ms timeout. A shared budget would be spent already.
-  const response = await instance.get("https://mock-server/slow-once")
+  const response = await instance.request({method, url: "https://mock-server/slow-once"})
   expect(response.data.count).toBe(2)
 })
 
 test.each([
-  {clarifyTimeoutError: false, code: "ECONNABORTED"},
-  {clarifyTimeoutError: true, code: "ETIMEDOUT"},
+  {method: "post", clarifyTimeoutError: false, code: "ECONNABORTED"},
+  {method: "post", clarifyTimeoutError: true, code: "ETIMEDOUT"},
+  {method: "patch", clarifyTimeoutError: false, code: "ECONNABORTED"},
+  {method: "patch", clarifyTimeoutError: true, code: "ETIMEDOUT"},
 ])
-("FUNC withRetry WITH POST timed out with $code EXPECT no retry attempts", async ({clarifyTimeoutError, code}) => {
+("FUNC withRetry WITH $method timed out with $code EXPECT no retry attempts", async ({method, clarifyTimeoutError, code}) => {
   const instance = new Builder()
     .withDefaults({timeout: 50, transitional: {clarifyTimeoutError}})
     .withRetry(2, 1)
     .build()
 
-  const error = await instance.post("https://mock-server/slow-once").catch((e: any) => e)
-  expect(error.code).toBe(code)
+  await expect(instance.request({method, url: "https://mock-server/slow-once"})).rejects.toHaveProperty("code", code)
 
-  // The follow-up is the second call, so the POST was sent once.
-  const response = await instance.post("https://mock-server/slow-once")
+  // The follow-up is the second call, so the request was sent once.
+  const response = await instance.request({method, url: "https://mock-server/slow-once"})
   expect(response.data.count).toBe(2)
 })
 
 test("FUNC withRetry WITH slow server error EXPECT every retry gets a fresh timeout", async () => {
-  const instance = new Builder().withDefaults({timeout: 100}).withRetry(2, 1).build()
+  const instance = new Builder().withDefaults({timeout: 200}).withRetry(2, 1).build()
 
-  // Each call takes 60 ms. A shared 100 ms budget would time out the second call.
+  // Each call takes 100 ms. A shared 200 ms budget would run out by the third call.
   const error = await instance.get("https://mock-server/slow-error").catch((e: any) => e)
   expect(error.response.status).toBe(500)
   expect(error.response.data.count).toBe(3)
