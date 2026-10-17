@@ -11,7 +11,6 @@ export default class Builder {
   private axiosConfig: CreateAxiosDefaults = {}
   private cacheConfig: CacheOptions = {ttl: 0, storage: sharedCache, enabled: false}
   private retryConfig: IAxiosRetryConfig | null = null
-  private timeoutRetries: boolean = false
   private errorMap: ErrorMap | null = null
 
   public withDefaults(config: CreateAxiosDefaults = {}): this {
@@ -20,12 +19,14 @@ export default class Builder {
   }
 
   /**
-   * Retries requests that failed with a network error, a 5xx, a 408 or a 429.
-   * With timeout retries on, a timed out request is retried only for an idempotent method.
+   * Retries requests that failed with a network error, a timeout, a 5xx, a 408 or a 429.
+   * A timed out request is retried only for an idempotent method.
+   * Every retry gets a fresh timeout.
    */
   public withRetry(retries: number = 3, retryDelayMultiplier: number = 2000): this {
     this.retryConfig = {
       retries,
+      shouldResetTimeout: true,
       onRetry: (retryCount: number, error: AxiosError, requestConfig: AxiosRequestConfig) => {
         console.warn(`Retrying failed HTTP (${error.response?.status ?? error.code}) request to ${requestConfig.method} ${requestConfig.url}. Retry attempt: ${retryCount}. Failure message: ${error.message}.`)
         return
@@ -35,7 +36,7 @@ export default class Builder {
       },
       retryCondition: (error: AxiosError) => {
         // A timed out write may already have reached the server.
-        if (this.timeoutRetries && isTimeout(error)) return isIdempotent(error)
+        if (isTimeout(error)) return isIdempotent(error)
 
         const networkError = axiosRetry.isNetworkOrIdempotentRequestError(error)
         const serverError = !!error.response && error.response.status >= 500 && error.response.status < 600
@@ -44,17 +45,6 @@ export default class Builder {
         return networkError || serverError || rateLimited || requestTimeout
       },
     }
-    return this
-  }
-
-  /**
-   * Retries timed out requests with an idempotent method.
-   * A timed out POST or PATCH is not retried.
-   * Every retry gets a fresh timeout.
-   * Applies only together with withRetry.
-   */
-  public withTimeoutRetries(): this {
-    this.timeoutRetries = true
     return this
   }
 
@@ -73,7 +63,7 @@ export default class Builder {
     const instance = setupCache(axios.create(this.axiosConfig), this.cacheConfig)
 
     if (this.retryConfig) {
-      axiosRetry(instance, {...this.retryConfig, shouldResetTimeout: this.timeoutRetries})
+      axiosRetry(instance, this.retryConfig)
     }
 
     if (this.errorMap) {
