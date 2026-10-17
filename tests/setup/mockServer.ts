@@ -91,17 +91,17 @@ export const handlers = [
 
   // Slow once (delays the first call by 200 ms, answers at once afterwards).
   ...httpMethods.map(method =>
-    http[method]('https://mock-server/slow-once', async () => {
+    http[method]("https://mock-server/slow-once", async () => {
       slowOnceCount++
       if (slowOnceCount === 1) await new Promise(resolve => setTimeout(resolve, 200))
       return HttpResponse.json({count: slowOnceCount}, {status: 200})
     })
   ),
 
-  // Slow error (delays every call by 60 ms, then fails with 500).
-  http.get('https://mock-server/slow-error', async () => {
+  // Slow error (delays every call by 100 ms, then fails with 500).
+  http.get("https://mock-server/slow-error", async () => {
     slowErrorCount++
-    await new Promise(resolve => setTimeout(resolve, 60))
+    await new Promise(resolve => setTimeout(resolve, 100))
     return HttpResponse.json({count: slowErrorCount}, {status: 500})
   }),
 
