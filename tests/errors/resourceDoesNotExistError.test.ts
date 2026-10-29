@@ -31,6 +31,7 @@ test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
   expect(obj.isCustomError).toBe(true)
   expect(obj.name).toBe("ResourceDoesNotExistError")
   expect(obj.httpCode).toBe(404)
+  expect(obj.isCritical).toBe(false)
 })
 
 test("FUNC constructor WITH instance EXPECT instanceof CustomError", () => {

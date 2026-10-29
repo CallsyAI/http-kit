@@ -152,7 +152,7 @@ The library includes a set of pre-defined, semantic error classes for common HTT
 - `UnauthorizedError` (401)
 - `PaymentRequiredError` (402)
 - `ForbiddenError` (403)
-- `ResourceDoesNotExistError` (404)
+- `ResourceDoesNotExistError` (404) - defaults to `isCritical: false`, unlike the other classes
 - `MethodNotAllowedError` (405)
 - `NotAcceptableError` (406)
 - `RequestTimeoutError` (408)
