@@ -10,6 +10,8 @@ export default class ResourceDoesNotExistError extends CustomError {
       title: "The requested resource could not be found",
       description: "You just requested a resource that is not (or no longer) in the system. Maybe it was recently deleted?",
       httpCode: 404,
+      // A missing resource is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }
