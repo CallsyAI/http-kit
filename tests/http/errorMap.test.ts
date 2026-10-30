@@ -486,13 +486,13 @@ test("FUNC withMatchEvent WITH callback modifying multiple properties EXPECT all
     .withError(UnauthorizedError, [401])
     .withMatchEvent((error) => {
       error.setDebugMessage("Debug info")
-      error.setIsCritical(false)
+      error.setIsCritical(true)
       error.setTitle("Custom title")
     })
   const error = {response: {status: 401, data: {}, statusText: "", headers: {}, config: {} as any}, message: "Unauthorized"} as AxiosError
   const result = errorMap.match(error)
   expect(result?.getDebugMessage()).toBe("Debug info")
-  expect(result?.getIsCritical()).toBe(false)
+  expect(result?.getIsCritical()).toBe(true)
   expect(result?.getTitle()).toBe("Custom title")
 })
 

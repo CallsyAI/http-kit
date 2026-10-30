@@ -10,6 +10,8 @@ export default class UnauthorizedError extends CustomError {
       title: "Authentication required",
       description: "You must provide valid authentication credentials to access this resource.",
       httpCode: 401,
+      // Missing or invalid credentials are a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

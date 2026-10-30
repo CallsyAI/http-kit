@@ -6,6 +6,7 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 
   expect(error.getName()).toBe("RateLimitError")
   expect(error.getHttpCode()).toBe(429)
+  expect(error.getIsCritical()).toBe(false)
   expect(error.getMessage()).toBe("Rate limit reached. Please try again later.")
   expect(error.getTitle()).toBe("Too many requests")
   expect(error.getDescription()).toBe("You tried to do this action too many times. Please wait and try again later.")
@@ -14,11 +15,13 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 test("FUNC constructor WITH custom props EXPECT overridden values", () => {
   const error = new RateLimitError({
     message: "Custom",
-    httpCode: 999
+    httpCode: 999,
+    isCritical: true
   })
 
   expect(error.getMessage()).toBe("Custom")
   expect(error.getHttpCode()).toBe(999)
+  expect(error.getIsCritical()).toBe(true)
 })
 
 test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
@@ -28,6 +31,7 @@ test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
   expect(obj.isCustomError).toBe(true)
   expect(obj.name).toBe("RateLimitError")
   expect(obj.httpCode).toBe(429)
+  expect(obj.isCritical).toBe(false)
 })
 
 test("FUNC constructor WITH instance EXPECT instanceof CustomError", () => {

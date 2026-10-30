@@ -10,6 +10,8 @@ export default class PaymentRequiredError extends CustomError {
       title: "Payment required",
       description: "Payment is required to access this resource.",
       httpCode: 402,
+      // A missing payment is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

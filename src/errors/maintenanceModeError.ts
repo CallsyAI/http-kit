@@ -10,6 +10,8 @@ export default class MaintenanceModeError extends CustomError {
       title: "Maintenance Mode",
       description: "The application is temporarily unavailable due to scheduled maintenance.",
       httpCode: 503,
+      // Maintenance mode is planned downtime, not a fault.
+      isCritical: false,
       ...props
     })
   }

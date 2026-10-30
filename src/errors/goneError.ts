@@ -10,6 +10,8 @@ export default class GoneError extends CustomError {
       title: "Resource gone",
       description: "The requested resource is no longer available and will not be available again.",
       httpCode: 410,
+      // A permanently removed resource is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

@@ -6,6 +6,7 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 
   expect(error.getName()).toBe("MaintenanceModeError")
   expect(error.getHttpCode()).toBe(503)
+  expect(error.getIsCritical()).toBe(false)
   expect(error.getMessage()).toBe("We're currently performing scheduled maintenance. Please try again shortly.")
   expect(error.getTitle()).toBe("Maintenance Mode")
   expect(error.getDescription()).toBe("The application is temporarily unavailable due to scheduled maintenance.")
@@ -14,11 +15,13 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 test("FUNC constructor WITH custom props EXPECT overridden values", () => {
   const error = new MaintenanceModeError({
     message: "Custom",
-    httpCode: 999
+    httpCode: 999,
+    isCritical: true
   })
 
   expect(error.getMessage()).toBe("Custom")
   expect(error.getHttpCode()).toBe(999)
+  expect(error.getIsCritical()).toBe(true)
 })
 
 test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
@@ -28,6 +31,7 @@ test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
   expect(obj.isCustomError).toBe(true)
   expect(obj.name).toBe("MaintenanceModeError")
   expect(obj.httpCode).toBe(503)
+  expect(obj.isCritical).toBe(false)
 })
 
 test("FUNC constructor WITH instance EXPECT instanceof CustomError", () => {

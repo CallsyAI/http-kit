@@ -18,6 +18,8 @@ export default class InvalidInputError extends CustomError {
       title: "Some of the inputs are not correct",
       description: "You have provided information that is not valid. Please check your input and try again.",
       httpCode: 400,
+      // Invalid input is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
     this.invalidFields = props?.invalidFields
