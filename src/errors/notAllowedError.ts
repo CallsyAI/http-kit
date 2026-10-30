@@ -10,6 +10,8 @@ export default class NotAllowedError extends CustomError {
       title: "You are not allowed to do this action",
       description: "You lack the permissions to do this action.",
       httpCode: 405,
+      // Lacking permission for an action is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

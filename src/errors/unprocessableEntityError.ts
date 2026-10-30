@@ -10,6 +10,8 @@ export default class UnprocessableEntityError extends CustomError {
       title: "Unprocessable entity",
       description: "The request was well-formed but contains semantic errors.",
       httpCode: 422,
+      // A semantically invalid request is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

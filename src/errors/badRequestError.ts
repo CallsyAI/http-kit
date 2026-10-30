@@ -10,6 +10,8 @@ export default class BadRequestError extends CustomError {
       title: "Bad request",
       description: "The server cannot process the request due to a client error.",
       httpCode: 400,
+      // A malformed request is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

@@ -10,6 +10,8 @@ export default class RateLimitError extends CustomError {
       title: "Too many requests",
       description: "You tried to do this action too many times. Please wait and try again later.",
       httpCode: 429,
+      // An exceeded rate limit is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

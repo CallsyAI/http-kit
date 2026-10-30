@@ -10,6 +10,8 @@ export default class ForbiddenError extends CustomError {
       title: "Access forbidden",
       description: "You do not have permission to access this resource.",
       httpCode: 403,
+      // Lacking permission for a resource is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

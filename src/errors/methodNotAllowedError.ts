@@ -10,6 +10,8 @@ export default class MethodNotAllowedError extends CustomError {
       title: "Method not allowed",
       description: "The HTTP method used is not supported for this resource.",
       httpCode: 405,
+      // An unsupported HTTP method is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

@@ -14,6 +14,8 @@ export default class RequiredValueError extends CustomError {
       title: "Provided value is empty",
       description: "The provided value was empty, but it can not be empty. Please check your input and try again.",
       httpCode: 400,
+      // A missing required value is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

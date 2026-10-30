@@ -6,6 +6,7 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 
   expect(error.getName()).toBe("NotAllowedError")
   expect(error.getHttpCode()).toBe(405)
+  expect(error.getIsCritical()).toBe(false)
   expect(error.getMessage()).toBe("You are not allowed to do this action.")
   expect(error.getTitle()).toBe("You are not allowed to do this action")
   expect(error.getDescription()).toBe("You lack the permissions to do this action.")
@@ -14,11 +15,13 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 test("FUNC constructor WITH custom props EXPECT overridden values", () => {
   const error = new NotAllowedError({
     message: "Custom",
-    httpCode: 999
+    httpCode: 999,
+    isCritical: true
   })
 
   expect(error.getMessage()).toBe("Custom")
   expect(error.getHttpCode()).toBe(999)
+  expect(error.getIsCritical()).toBe(true)
 })
 
 test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
@@ -28,6 +31,7 @@ test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
   expect(obj.isCustomError).toBe(true)
   expect(obj.name).toBe("NotAllowedError")
   expect(obj.httpCode).toBe(405)
+  expect(obj.isCritical).toBe(false)
 })
 
 test("FUNC constructor WITH instance EXPECT instanceof CustomError", () => {

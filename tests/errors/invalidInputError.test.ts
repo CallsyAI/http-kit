@@ -22,6 +22,7 @@ test("FUNC constructor WITH invalidFields EXPECT correct defaults", () => {
   expect(error.getTitle()).toBe("Some of the inputs are not correct")
   expect(error.getDescription()).toBe("You have provided information that is not valid. Please check your input and try again.")
   expect(error.getHttpCode()).toBe(400)
+  expect(error.getIsCritical()).toBe(false)
 })
 
 test("FUNC constructor WITH nested field names EXPECT fields stored", () => {
@@ -48,6 +49,7 @@ test("FUNC toObject WITH fields EXPECT invalidFields included", () => {
   expect(obj.isCustomError).toBe(true)
   expect(obj.name).toBe("InvalidInputError")
   expect(obj.message).toBe("Invalid input.")
+  expect(obj.isCritical).toBe(false)
 })
 
 test("FUNC toObject WITH fields and debugMessage EXPECT invalidFields included", () => {
@@ -82,6 +84,12 @@ test("FUNC constructor WITH custom httpCode EXPECT override applied", () => {
   const error = new InvalidInputError({httpCode: 422})
 
   expect(error.getHttpCode()).toBe(422)
+})
+
+test("FUNC constructor WITH custom isCritical EXPECT override applied", () => {
+  const error = new InvalidInputError({isCritical: true})
+
+  expect(error.getIsCritical()).toBe(true)
 })
 
 test("FUNC fromObject WITH serialized InvalidInputError EXPECT getInvalidFields works", () => {

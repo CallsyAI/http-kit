@@ -10,6 +10,8 @@ export default class RequestTimeoutError extends CustomError {
       title: "Request timeout",
       description: "The server timed out waiting for the request.",
       httpCode: 408,
+      // A request sent too slowly is a refusal the caller can resolve, not a fault.
+      isCritical: false,
       ...props
     })
   }

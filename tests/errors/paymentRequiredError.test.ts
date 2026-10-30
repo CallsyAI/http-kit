@@ -6,6 +6,7 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 
   expect(error.getName()).toBe("PaymentRequiredError")
   expect(error.getHttpCode()).toBe(402)
+  expect(error.getIsCritical()).toBe(false)
   expect(error.getMessage()).toBe("Payment required.")
   expect(error.getTitle()).toBe("Payment required")
   expect(error.getDescription()).toBe("Payment is required to access this resource.")
@@ -14,11 +15,13 @@ test("FUNC constructor WITH no props EXPECT default values", () => {
 test("FUNC constructor WITH custom props EXPECT overridden values", () => {
   const error = new PaymentRequiredError({
     message: "Custom",
-    httpCode: 999
+    httpCode: 999,
+    isCritical: true
   })
 
   expect(error.getMessage()).toBe("Custom")
   expect(error.getHttpCode()).toBe(999)
+  expect(error.getIsCritical()).toBe(true)
 })
 
 test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
@@ -28,6 +31,7 @@ test("FUNC toObject WITH valid instance EXPECT serialized object", () => {
   expect(obj.isCustomError).toBe(true)
   expect(obj.name).toBe("PaymentRequiredError")
   expect(obj.httpCode).toBe(402)
+  expect(obj.isCritical).toBe(false)
 })
 
 test("FUNC constructor WITH instance EXPECT instanceof CustomError", () => {

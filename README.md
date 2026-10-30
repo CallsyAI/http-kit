@@ -148,31 +148,34 @@ CustomError.throwIfError(apiResponse);
 
 The library includes a set of pre-defined, semantic error classes for common HTTP scenarios:
 
-- `BadRequestError` (400)
-- `UnauthorizedError` (401)
-- `PaymentRequiredError` (402)
-- `ForbiddenError` (403)
-- `ResourceDoesNotExistError` (404)
-- `MethodNotAllowedError` (405)
-- `NotAcceptableError` (406)
-- `RequestTimeoutError` (408)
-- `ConflictError` (409)
-- `GoneError` (410)
-- `RateLimitError` (429)
-- `UnprocessableEntityError` (422)
-- `ExternalApiError` (424)
-- `GenericError` (500)
-- `NotImplementedError` (501)
-- `BadGatewayError` (502)
-- `GatewayTimeoutError` (504)
-- `MaintenanceModeError` (503)
+`isCritical` controls whether a thrown error triggers a critical (paging) alert or is only logged normally, and you can override the default per throw through the constructor props, e.g. `new BadRequestError({isCritical: true})`.
 
-And utility errors:
-- `CustomError` (Base class)
-- `InvalidInputError`
-- `RequiredValueError`
-- `MisconfiguredError`
-- `NotAllowedError`
+| Class | HTTP Code | Critical by default |
+| --- | --- | --- |
+| `BadRequestError` | 400 | No |
+| `InvalidInputError` | 400 | No |
+| `RequiredValueError` | 400 | No |
+| `UnauthorizedError` | 401 | No |
+| `PaymentRequiredError` | 402 | No |
+| `ForbiddenError` | 403 | No |
+| `ResourceDoesNotExistError` | 404 | No |
+| `MethodNotAllowedError` | 405 | No |
+| `NotAllowedError` | 405 | No |
+| `NotAcceptableError` | 406 | No |
+| `RequestTimeoutError` | 408 | No |
+| `ConflictError` | 409 | No |
+| `GoneError` | 410 | No |
+| `UnprocessableEntityError` | 422 | No |
+| `ExternalApiError` | 424 | Yes |
+| `RateLimitError` | 429 | No |
+| `GenericError` | 500 | Yes |
+| `MisconfiguredError` | 500 | Yes |
+| `NotImplementedError` | 501 | Yes |
+| `BadGatewayError` | 502 | Yes |
+| `MaintenanceModeError` | 503 | No |
+| `GatewayTimeoutError` | 504 | Yes |
+
+All of these extend the `CustomError` base class.
 
 ### Custom Error Classes
 
